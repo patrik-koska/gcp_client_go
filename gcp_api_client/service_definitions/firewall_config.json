@@ -1,0 +1,19 @@
+{
+  "name": "default-allow-http",
+  "kind": "compute#firewall",
+  "sourceRanges": [
+    "0.0.0.0/0"
+  ],
+  "network": "projects/glassy-operand-308611/global/networks/default",
+  "targetTags": [
+    "http-server"
+  ],
+  "allowed": [
+    {
+      "IPProtocol": "tcp",
+      "ports": [
+        "80"
+      ]
+    }
+  ]
+}

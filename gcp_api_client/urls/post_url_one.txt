@@ -1,0 +1,1 @@
+https://www.googleapis.com/compute/v1/projects/glassy-operand-308611/zones/europe-west3-c/instances
