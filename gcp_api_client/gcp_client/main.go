@@ -108,3 +108,7 @@ func getApiKey(keyPath string) (string, error) {
 	key := string(content)
 	return key, nil
 }
+
+func getArguments() string {
+	return ""
+}
