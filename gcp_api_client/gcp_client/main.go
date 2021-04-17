@@ -5,6 +5,8 @@ import (
 	"strings"
 	"io/ioutil"
 	"regexp"
+	"net/http"
+	"flag"
 	
 )
 
@@ -34,13 +36,13 @@ func main() {
 
 	jsons := splitByEmptyNewline(jsonContent)
 
-	fmt.Println("urls:")
-	fmt.Println(urls[0])
-	fmt.Println(urls[1])
+	//fmt.Println("urls:")
+	//fmt.Println(urls[0])
+	//fmt.Println(urls[1])
 	
-	fmt.Println("jsons:")
-	fmt.Println(jsons[0])
-	fmt.Println(jsons[1])
+	//fmt.Println("jsons:")
+	//fmt.Println(jsons[0])
+	//fmt.Println(jsons[1])
 	
 }
 
@@ -96,7 +98,23 @@ func splitByEmptyNewline(jsonContent string) []string {
 
 }
 
-func sendPostRequest(url string, json string) string {
+func sendPostRequest(url string, json string, apiKey string) string {
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
+	//req.Header.Set("X-Custom-Header", "Real-Custom-Shit")
+	//Authorization of the API call
+	req.Header.Set("Authorization", "Bearer " + apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+			panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println(resp.Status)
+	fmt.Println(resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	return ""
 }
 
@@ -110,5 +128,10 @@ func getApiKey(keyPath string) (string, error) {
 }
 
 func getArguments() string {
-	return ""
+	var jsonFilePath string
+	flag.StringVar(&jsonFilePath, "json", "default", "Path for the generated json file")
+	var apiKeyPath string
+	flag.StringVar(&apiKeyPath, "api-key", "default", "Path for the Google Cloud API key")
+	flag.Parse()
+	return jsonFilePath, apiKeyPath
 }
