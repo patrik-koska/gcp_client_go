@@ -29,23 +29,17 @@ func main() {
 		panic(err)
 	}
 
-	//fmt.Println("-- printing jsonContent --")
-	//fmt.Println(jsonContent)
-
 	var p_jsonContent *string
 
 	p_jsonContent = &jsonContent
 
 	*p_jsonContent = removePOSTwords(jsonContent)
 
-
 	urls := findURLsinText(jsonContent)
 
 	*p_jsonContent = removeUrls(jsonContent)
 
-
 	jsons := splitByEmptyNewline(jsonContent)
-
 
 	var trimmedUrls []string
 	for _, url := range urls {
@@ -56,7 +50,6 @@ func main() {
 	for z, _ := range urls {
 		sendPostRequest(trimmedUrls[z], jsons[z], strings.TrimSpace(token))
 	}
-
 
 }
 
