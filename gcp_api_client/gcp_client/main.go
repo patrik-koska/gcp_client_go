@@ -1,22 +1,38 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"io/ioutil"
-	"regexp"
-	"net/http"
+	"bytes"
+	//"encoding/json"
 	"flag"
-	
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"regexp"
+	//"strconv"
+	"strings"
+	"time"
 )
 
 func main() {
-	jsonFilePath := "/home/kali/projects/gcp_client_go/gcp_api_client/gcp_client/basic-gcp-server.json"
-	
-	jsonContent , err := readFileAsString(jsonFilePath)
+	var jsonFilePath string
+	flag.StringVar(&jsonFilePath, "json", "default", "Path for the generated json file")
+	var tokenPath string
+	flag.StringVar(&tokenPath, "token", "default", "Path for the Google Cloud API key")
+
+	flag.Parse()
+
+	jsonContent, err := readFileAsString(jsonFilePath)
 	if err != nil {
 		panic(err)
 	}
+
+	token, err := readFileAsString(tokenPath)
+	if err != nil {
+		panic(err)
+	}
+
+	//fmt.Println("-- printing jsonContent --")
+	//fmt.Println(jsonContent)
 
 	var p_jsonContent *string
 
@@ -29,27 +45,36 @@ func main() {
 	//findJsonInText(jsonContent)
 	urls := findURLsinText(jsonContent)
 
-
 	*p_jsonContent = removeUrls(jsonContent)
 
 	//fmt.Println(jsonContent)
 
 	jsons := splitByEmptyNewline(jsonContent)
 
-	//fmt.Println("urls:")
-	//fmt.Println(urls[0])
-	//fmt.Println(urls[1])
-	
-	//fmt.Println("jsons:")
-	//fmt.Println(jsons[0])
-	//fmt.Println(jsons[1])
-	
+	/*jsonUrlMap := make(map[string]string)
+
+	for i, _ := range urls {
+		jsonUrlMap[urls[i]] = jsons[i]
+	}*/
+
+	var trimmedUrls []string
+	for _, url := range urls {
+
+		trimmedUrls = append(trimmedUrls, strings.TrimSpace(url))
+	}
+
+	for z, _ := range urls {
+		sendPostRequest(trimmedUrls[z], jsons[z], strings.TrimSpace(token))
+	}
+
+	// Now we have to process the urls and jsons list
+
 }
 
-func readFileAsString(filePath string) (string,error) {
+func readFileAsString(filePath string) (string, error) {
 	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
-			return "", err
+		return "", err
 	}
 	text := string(content)
 	return text, nil
@@ -57,6 +82,8 @@ func readFileAsString(filePath string) (string,error) {
 
 func removePOSTwords(jsonContent string) string {
 	cleaned := strings.ReplaceAll(jsonContent, "POST", "")
+	// testing
+	//cleaned := jsonContent
 	return cleaned
 }
 
@@ -64,9 +91,9 @@ func removePOSTwords(jsonContent string) string {
 func findURLsinText(jsonContent string) []string {
 	//fmt.Println(jsonContent)
 	str := jsonContent
-	
+
 	re := regexp.MustCompile(`(\ https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`)
-	
+
 	submatchall := re.FindAllString(str, -1)
 
 	var urls []string
@@ -98,40 +125,58 @@ func splitByEmptyNewline(jsonContent string) []string {
 
 }
 
-func sendPostRequest(url string, json string, apiKey string) string {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(json))
+func sendPostRequest(url string, json string, apiKey string) {
+	//func (m RawMessage) MarshalJSON() ([]byte, error)
+	//rJson := strconv.Quote(json)
+	rJson := json
+	var bJson = []byte(rJson)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bJson))
+	if err != nil {
+		panic(err)
+	}
 	//req.Header.Set("X-Custom-Header", "Real-Custom-Shit")
 	//Authorization of the API call
-	req.Header.Set("Authorization", "Bearer " + apiKey)
+	var bearer = "Bearer " + apiKey
+	req.Header.Set("Authorization", bearer)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
+	// mandatory, otherwise does not time out
+	client.Timeout = time.Second * 60
 	resp, err := client.Do(req)
 	if err != nil {
-			panic(err)
+		panic(err)
 	}
 	defer resp.Body.Close()
 	fmt.Println(resp.Status)
 	fmt.Println(resp.Header)
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
-	return ""
 }
 
-func getApiKey(keyPath string) (string, error) {
-	content, err := ioutil.ReadFile(keyPath)
+/*func sendPostRequest(url string, json string, apiKey string) {
+	var bearer = "Bearer " + apiKey
+
+	req, err := http.NewRequest("POST", url, nil)
+
+	req.Header.Add("Authorization", bearer)
+
+	client := &http.Client{}
+	client.Timeout = time.Second * 60
+
+	resp, err := client.Do(req)
+
 	if err != nil {
-			return "", err
+		panic(err)
 	}
-	key := string(content)
-	return key, nil
-}
 
-func getArguments() string {
-	var jsonFilePath string
-	flag.StringVar(&jsonFilePath, "json", "default", "Path for the generated json file")
-	var apiKeyPath string
-	flag.StringVar(&apiKeyPath, "api-key", "default", "Path for the Google Cloud API key")
-	flag.Parse()
-	return jsonFilePath, apiKeyPath
-}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string([]byte(body)))
+}*/
