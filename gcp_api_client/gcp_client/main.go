@@ -2,13 +2,11 @@ package main
 
 import (
 	"bytes"
-	//"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	//"strconv"
 	"strings"
 	"time"
 )
@@ -128,8 +126,7 @@ func splitByEmptyNewline(jsonContent string) []string {
 func sendPostRequest(url string, json string, apiKey string) {
 	//func (m RawMessage) MarshalJSON() ([]byte, error)
 	//rJson := strconv.Quote(json)
-	rJson := json
-	var bJson = []byte(rJson)
+	var bJson = []byte(json)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bJson))
 	if err != nil {
 		panic(err)
@@ -153,30 +150,3 @@ func sendPostRequest(url string, json string, apiKey string) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 }
-
-/*func sendPostRequest(url string, json string, apiKey string) {
-	var bearer = "Bearer " + apiKey
-
-	req, err := http.NewRequest("POST", url, nil)
-
-	req.Header.Add("Authorization", bearer)
-
-	client := &http.Client{}
-	client.Timeout = time.Second * 60
-
-	resp, err := client.Do(req)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string([]byte(body)))
-}*/
