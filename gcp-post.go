@@ -12,13 +12,19 @@ import (
 )
 
 func main() {
+	// Getting the values of the generated file and the access token
+	// NOTE: You can retrieve the token with the 'gcloud auth print-access-token' command
+	// after you initiated your project/account with the gcloud
+	// put it into a file as 'gcloud auth print-access-token > $HOME/gcp_access_token'
 	var jsonFilePath string
 	flag.StringVar(&jsonFilePath, "json", "default", "Path for the generated json file")
 	var tokenPath string
 	flag.StringVar(&tokenPath, "token", "default", "Path for the Google Cloud API key")
 
 	flag.Parse()
+	// --------------------------------------------------------------------------------
 
+	// Getting the content of the received files
 	jsonContent, err := readFileAsString(jsonFilePath)
 	if err != nil {
 		panic(err)
@@ -28,7 +34,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// -----------------------------------------------
 
+	// Processing the file through a pointer. We remove the "POST" strings, collect the urls
+	// remove the urls from it afterwards, and put the leftover jsons into a slice
 	var p_jsonContent *string
 
 	p_jsonContent = &jsonContent
@@ -46,10 +55,13 @@ func main() {
 
 		trimmedUrls = append(trimmedUrls, strings.TrimSpace(url))
 	}
+	// --------------------------------------------------------------------------------
 
+	// Making the post request to the Google API's, with the proper url - json pairs
 	for z, _ := range urls {
 		sendPostRequest(trimmedUrls[z], jsons[z], strings.TrimSpace(token))
 	}
+	// ---------------------------------------------------------------------------------
 
 }
 
