@@ -14,7 +14,7 @@ import (
 func main() {
 	// Getting the values of the generated file and the access token
 	// NOTE: You can retrieve the token with the 'gcloud auth print-access-token' command
-	// after you initiated your project/account with the gcloud
+	// after you initiated your project/account with the gcloud cli.
 	// put it into a file as 'gcloud auth print-access-token > $HOME/gcp_access_token'
 	var jsonFilePath string
 	flag.StringVar(&jsonFilePath, "json", "default", "Path for the generated json file")
