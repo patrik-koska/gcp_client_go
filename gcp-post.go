@@ -38,22 +38,14 @@ func main() {
 
 	*p_jsonContent = removePOSTwords(jsonContent)
 
-	//fmt.Println(jsonContent)
 
-	//findJsonInText(jsonContent)
 	urls := findURLsinText(jsonContent)
 
 	*p_jsonContent = removeUrls(jsonContent)
 
-	//fmt.Println(jsonContent)
 
 	jsons := splitByEmptyNewline(jsonContent)
 
-	/*jsonUrlMap := make(map[string]string)
-
-	for i, _ := range urls {
-		jsonUrlMap[urls[i]] = jsons[i]
-	}*/
 
 	var trimmedUrls []string
 	for _, url := range urls {
@@ -65,7 +57,6 @@ func main() {
 		sendPostRequest(trimmedUrls[z], jsons[z], strings.TrimSpace(token))
 	}
 
-	// Now we have to process the urls and jsons list
 
 }
 
@@ -80,14 +71,11 @@ func readFileAsString(filePath string) (string, error) {
 
 func removePOSTwords(jsonContent string) string {
 	cleaned := strings.ReplaceAll(jsonContent, "POST", "")
-	// testing
-	//cleaned := jsonContent
 	return cleaned
 }
 
 // url regex could be: ^(?:https?:\/\/)
 func findURLsinText(jsonContent string) []string {
-	//fmt.Println(jsonContent)
 	str := jsonContent
 
 	re := regexp.MustCompile(`(\ https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?`)
@@ -96,7 +84,6 @@ func findURLsinText(jsonContent string) []string {
 
 	var urls []string
 	for _, match := range submatchall {
-		//fmt.Println(match)
 		urls = append(urls, match)
 	}
 	return urls
@@ -124,15 +111,11 @@ func splitByEmptyNewline(jsonContent string) []string {
 }
 
 func sendPostRequest(url string, json string, apiKey string) {
-	//func (m RawMessage) MarshalJSON() ([]byte, error)
-	//rJson := strconv.Quote(json)
 	var bJson = []byte(json)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bJson))
 	if err != nil {
 		panic(err)
 	}
-	//req.Header.Set("X-Custom-Header", "Real-Custom-Shit")
-	//Authorization of the API call
 	var bearer = "Bearer " + apiKey
 	req.Header.Set("Authorization", bearer)
 	req.Header.Set("Content-Type", "application/json")
